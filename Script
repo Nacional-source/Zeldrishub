@@ -1,0 +1,158 @@
+local player = game.Players.LocalPlayer
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ZeldrisHub"
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Frame principal do Hub
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.Size = UDim2.new(0, 400, 0, 600)
+mainFrame.Position = UDim2.new(0.5, -200, 0.5, -300)
+mainFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+mainFrame.BackgroundTransparency = 0.2
+mainFrame.BorderSizePixel = 0
+Instance.new("UICorner", mainFrame)
+
+-- Animação de entrada
+mainFrame:TweenPosition(UDim2.new(0.5, -200, 0.5, -300), "Out", "Quad", 0.5, true)
+
+-- Funções de criação de botões
+local function addButtonWithTextBox(label, callback)
+	local container = Instance.new("Frame", mainFrame)
+	container.Size = UDim2.new(0, 350, 0, 40)
+	container.Position = UDim2.new(0.5, -175, 0, 50 * #mainFrame:GetChildren())
+	container.BackgroundTransparency = 1
+
+	local textBox = Instance.new("TextBox", container)
+	textBox.Size = UDim2.new(0.6, -5, 1, 0)
+	textBox.Position = UDim2.new(0, 0, 0, 0)
+	textBox.PlaceholderText = "Nome ou comando"
+	textBox.Text = ""
+	textBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+	textBox.Font = Enum.Font.SourceSans
+	textBox.TextSize = 18
+	Instance.new("UICorner", textBox)
+
+	local button = Instance.new("TextButton", container)
+	button.Size = UDim2.new(0.4, 0, 1, 0)
+	button.Position = UDim2.new(0.6, 5, 0, 0)
+	button.Text = label
+	button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	button.Font = Enum.Font.SourceSansBold
+	button.TextSize = 18
+	Instance.new("UICorner", button)
+
+	button.MouseButton1Click:Connect(function()
+		callback(textBox.Text)
+	end)
+end
+
+local function createSimpleButton(label, callback)
+	local button = Instance.new("TextButton", mainFrame)
+	button.Size = UDim2.new(0, 200, 0, 40)
+	button.Position = UDim2.new(0.5, -100, 0, 50 * #mainFrame:GetChildren())
+	button.Text = label
+	button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	button.Font = Enum.Font.SourceSansBold
+	button.TextSize = 18
+	Instance.new("UICorner", button)
+	button.MouseButton1Click:Connect(callback)
+end
+
+-- Interface para roupas
+local roupaFrame = Instance.new("Frame", screenGui)
+roupaFrame.Size = UDim2.new(0, 400, 0, 200)
+roupaFrame.Position = UDim2.new(0.5, -200, 0.8, 0)
+roupaFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+roupaFrame.Visible = false
+Instance.new("UICorner", roupaFrame)
+
+local input = Instance.new("TextBox", roupaFrame)
+input.Size = UDim2.new(0.8, 0, 0, 40)
+input.Position = UDim2.new(0.1, 0, 0, 20)
+input.PlaceholderText = "Digite o ID da roupa"
+input.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+input.TextColor3 = Color3.fromRGB(255, 255, 255)
+input.Font = Enum.Font.SourceSans
+input.TextSize = 18
+Instance.new("UICorner", input)
+
+local equipButton = Instance.new("TextButton", roupaFrame)
+equipButton.Size = UDim2.new(0.8, 0, 0, 40)
+equipButton.Position = UDim2.new(0.1, 0, 0, 70)
+equipButton.Text = "Equipar roupa"
+equipButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+equipButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+equipButton.Font = Enum.Font.SourceSansBold
+equipButton.TextSize = 18
+Instance.new("UICorner", equipButton)
+
+equipButton.MouseButton1Click:Connect(function()
+	local id = input.Text
+	if id and id ~= "" then
+		local asset = Instance.new("Shirt", player.Character)
+		asset.ShirtTemplate = "rbxassetid://" .. id
+		asset.Parent = player.Character
+	end
+end)
+
+-- Botão toggle (abrir/fechar o hub)
+local toggle = Instance.new("TextButton", screenGui)
+toggle.Size = UDim2.new(0, 40, 0, 40)
+toggle.Position = UDim2.new(0, 10, 0.5, -20)
+toggle.Text = "+"
+toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggle.Font = Enum.Font.SourceSansBold
+toggle.TextSize = 24
+toggle.Draggable = true
+Instance.new("UICorner", toggle)
+
+toggle.MouseButton1Click:Connect(function()
+	mainFrame.Visible = not mainFrame.Visible
+	toggle.Text = mainFrame.Visible and "-" or "+"
+end)
+
+-- Funções dos botões
+addButtonWithTextBox("Teleport", function(input)
+	local targetPlayer = game.Players:FindFirstChild(input)
+	if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+		player.Character:MoveTo(targetPlayer.Character.HumanoidRootPart.Position)
+	end
+end)
+
+addButtonWithTextBox("Bring", function(input)
+	local targetPlayer = game.Players:FindFirstChild(input)
+	if targetPlayer and targetPlayer.Character and player.Character.PrimaryPart then
+		targetPlayer.Character:SetPrimaryPartCFrame(player.Character.PrimaryPart.CFrame + Vector3.new(2, 0, 0))
+	end
+end)
+
+addButtonWithTextBox("Kill", function(input)
+	local playerName, vehicleType = unpack(string.split(input, "/"))
+	local targetPlayer = game.Players:FindFirstChild(playerName)
+	if targetPlayer and targetPlayer.Character and vehicleType then
+		local vehicleModel = nil
+		if vehicleType:lower() == "sofá" then
+			vehicleModel = game.ReplicatedStorage:FindFirstChild("Sofa")
+		elseif vehicleType:lower() == "bus" then
+			vehicleModel = game.ReplicatedStorage:FindFirstChild("Bus")
+		end
+		if vehicleModel then
+			local vehicleInstance = vehicleModel:Clone()
+			vehicleInstance:SetPrimaryPartCFrame(targetPlayer.Character:GetPrimaryPartCFrame())
+			vehicleInstance.Parent = workspace
+			targetPlayer.Character:SetPrimaryPartCFrame(vehicleInstance.PrimaryPart.CFrame)
+		end
+	end
+end)
+
+createSimpleButton("Roupa", function()
+	roupaFrame.Visible = not roupaFrame.Visible
+end)
+
+createSimpleButton("Infinite Yield", function()
+	loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+end)
